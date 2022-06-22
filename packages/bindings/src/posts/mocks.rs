@@ -105,8 +105,7 @@ pub fn get_mocked_post_attachments(subspace_id: &Uint64, post_id: &Uint64) -> Ve
             content: PostAttachment::Media {
                 uri: "ftp://domain.io/image.png".to_string(),
                 mime_type: "image/png".to_string(),
-            }
-            .into(),
+            },
         },
         Attachment {
             subspace_id: *subspace_id,
@@ -116,8 +115,7 @@ pub fn get_mocked_post_attachments(subspace_id: &Uint64, post_id: &Uint64) -> Ve
             content: PostAttachment::Media {
                 uri: "ftp://domain.io/image2.png".to_string(),
                 mime_type: "image/png".to_string(),
-            }
-            .into(),
+            },
         },
     ]
 }

@@ -1,11 +1,8 @@
 //! Contains structs and enums related to the x/posts module.
 
-use crate::posts::models::UnwrapPostAttachmentError::{InvalidMedia, InvalidPoll};
 use cosmwasm_std::{Addr, Uint64};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
-use thiserror::Error;
 
 /// Contains all the information about a single post.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -141,46 +138,7 @@ pub struct Attachment {
     /// Id of this attachment.
     pub id: u32,
     /// Content of the attachment.
-    pub content: RawPostAttachment,
-}
-
-/// Struct representing a generic post attachment that can be serialized and sent to the chain.  
-/// This struct can be created converting a [`PostAttachment`] using the [`core::convert::Into`] trait.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct RawPostAttachment {
-    /// Attachment uri type, can be:
-    /// * `/desmos.post.v1.Media` if representing a media.
-    /// * `/desmos.post.v1.Poll` if representing a poll.
-    #[serde(rename = "@type")]
-    type_uri: String,
-
-    /// Mime type if the post attachment is a media.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    mime_type: Option<String>,
-    /// Uri where can be found the media.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    uri: Option<String>,
-
-    /// Question of the poll.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    question: Option<String>,
-    /// Answers the users can choose from.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    provided_answers: Option<Vec<ProvidedAnswer>>,
-    /// Date at which the poll will close in RFC 3339 format.
-    /// example: 1972-01-01T10:00:20.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    end_date: Option<String>,
-    /// Whether the poll allows multiple choices from the same user or not.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    allows_multiple_answers: Option<bool>,
-    /// Whether the poll allows to edit an answer or not.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    allows_answer_edits: Option<bool>,
-    /// Final poll results.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    final_tally_results: Option<PollTallyResults>,
+    pub content: PostAttachment,
 }
 
 /// Contains the result of a single poll provided answer.
@@ -230,7 +188,7 @@ pub struct UserAnswer {
 }
 
 /// Supported attachment that can be attached to a post.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, JsonSchema)]
 pub enum PostAttachment {
     /// Represents a media attachment.
     Media {
@@ -255,88 +213,4 @@ pub enum PostAttachment {
         /// Final poll results.
         final_tally_results: Option<PollTallyResults>,
     },
-}
-
-impl From<PostAttachment> for RawPostAttachment {
-    fn from(post_attachment: PostAttachment) -> Self {
-        match post_attachment {
-            PostAttachment::Media { mime_type, uri } => RawPostAttachment {
-                type_uri: "/desmos.posts.v1.Media".to_string(),
-                mime_type: Some(mime_type),
-                uri: Some(uri),
-                question: None,
-                provided_answers: None,
-                end_date: None,
-                allows_multiple_answers: None,
-                allows_answer_edits: None,
-                final_tally_results: None,
-            },
-            PostAttachment::Poll {
-                question,
-                provided_answers,
-                end_date,
-                allows_multiple_answers,
-                allows_answer_edits,
-                final_tally_results,
-            } => RawPostAttachment {
-                type_uri: "/desmos.posts.v1.Poll".to_string(),
-                mime_type: None,
-                uri: None,
-                question: Some(question),
-                provided_answers: Some(provided_answers),
-                end_date: Some(end_date),
-                allows_multiple_answers: Some(allows_multiple_answers),
-                allows_answer_edits: Some(allows_answer_edits),
-                final_tally_results,
-            },
-        }
-    }
-}
-
-/// Represents the errors that can occur when converting a [`RawPostAttachment`] into a [`PostAttachment`].
-#[derive(Error, Debug, Clone)]
-pub enum UnwrapPostAttachmentError {
-    /// Error that occur if [`RawPostAttachment`] have an unknown attachment type.
-    #[error("unknown attachment type: {0}")]
-    UnknownAttachment(String),
-    /// Error that occur if [`RawPostAttachment`] have type `/desmos.posts.v1.Media` but
-    /// some fields are undefined.
-    #[error("invalid media attachment field {0} is none")]
-    InvalidMedia(String),
-    /// Error that occur if [`RawPostAttachment`] have type `/desmos.posts.v1.Poll` but
-    /// some fields are undefined.
-    #[error("invalid poll attachment field {0} is none")]
-    InvalidPoll(String),
-}
-
-impl TryFrom<RawPostAttachment> for PostAttachment {
-    type Error = UnwrapPostAttachmentError;
-
-    fn try_from(value: RawPostAttachment) -> Result<Self, Self::Error> {
-        if value.type_uri == "/desmos.posts.v1.Media" {
-            Ok(PostAttachment::Media {
-                mime_type: value
-                    .mime_type
-                    .ok_or(InvalidMedia("mime_type".to_string()))?,
-                uri: value.uri.ok_or(InvalidMedia("uri".to_string()))?,
-            })
-        } else if value.type_uri == "/desmos.posts.v1.Poll" {
-            Ok(PostAttachment::Poll {
-                question: value.question.ok_or(InvalidPoll("question".to_string()))?,
-                provided_answers: value
-                    .provided_answers
-                    .ok_or(InvalidPoll("provided_answers".to_string()))?,
-                end_date: value.end_date.ok_or(InvalidPoll("end_date".to_string()))?,
-                allows_multiple_answers: value
-                    .allows_multiple_answers
-                    .ok_or(InvalidPoll("allows_multiple_answers".to_string()))?,
-                allows_answer_edits: value
-                    .allows_answer_edits
-                    .ok_or(InvalidPoll("allows_answer_edits".to_string()))?,
-                final_tally_results: value.final_tally_results,
-            })
-        } else {
-            Err(UnwrapPostAttachmentError::UnknownAttachment(value.type_uri))
-        }
-    }
 }

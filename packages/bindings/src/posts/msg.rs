@@ -1,6 +1,6 @@
 //! Contains the messages that can be sent to the chain to interact with the x/posts module.
 
-use crate::posts::models::{Entities, PostReference, RawPostAttachment, ReplySetting};
+use crate::posts::models::{Entities, PostAttachment, PostReference, ReplySetting};
 use cosmwasm_std::{Addr, Uint64};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -22,7 +22,7 @@ pub enum PostsMsg {
         /// Entities connected to this post.
         entities: Option<Entities>,
         /// Attachments of the post.
-        attachments: Option<Vec<RawPostAttachment>>,
+        attachments: Option<Vec<PostAttachment>>,
         /// Author of the post.
         author: Addr,
         /// Id of the original post of the conversation.
@@ -63,7 +63,7 @@ pub enum PostsMsg {
         /// Id of the post to which to add the attachment.
         post_id: Uint64,
         /// Content of the attachment.
-        content: RawPostAttachment,
+        content: PostAttachment,
         /// Editor of the post.
         editor: Addr,
     },

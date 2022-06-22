@@ -28,7 +28,7 @@ set -e
 # Upload the smart contract
 echo "Uploading contract..."
 echo $KEYRING_PASS | desmos tx wasm store "$SMART_CONTRACT" \
-  --from $USER1 --chain-id=testchain --keyring-backend=file -y --gas 2000000 \
+  --from $USER1 --chain-id=testchain --keyring-backend=file -y --gas 3000000 \
   -b=block
 
 # Initialize the contract

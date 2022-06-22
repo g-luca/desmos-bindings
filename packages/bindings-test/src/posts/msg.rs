@@ -93,8 +93,7 @@ mod test {
             content: PostAttachment::Media {
                 mime_type: "test-mime".to_string(),
                 uri: "https://test.com/image.png".to_string(),
-            }
-            .into(),
+            },
             editor: Addr::unchecked(&contract_address),
         };
 
@@ -117,8 +116,7 @@ mod test {
                 allows_multiple_answers: false,
                 allows_answer_edits: false,
                 final_tally_results: None,
-            }
-            .into(),
+            },
             editor: Addr::unchecked(&contract_address),
         };
 

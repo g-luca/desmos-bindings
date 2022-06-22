@@ -135,12 +135,8 @@ mod test {
         let attachment = result.attachments.first().unwrap();
         assert_eq!(attachment.id, TEST_POLL_ID);
 
-        // Convert from the raw attachment content into the enum
-        let post_attachment: PostAttachment =
-            PostAttachment::try_from(attachment.content.clone()).unwrap();
-
         assert_eq!(
-            post_attachment,
+            attachment.content,
             PostAttachment::Poll {
                 question: "Test question?".to_string(),
                 provided_answers: vec![

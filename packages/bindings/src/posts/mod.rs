@@ -1,5 +1,6 @@
 //! Contains utilities,structs and enum to interact with the Desmos x/posts module.
 
+mod custom_serialization;
 #[cfg(feature = "mocks")]
 pub mod mocks;
 pub mod models;
